@@ -11,8 +11,8 @@ import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
 class Bullet {
-    private ControllerGame game;
-    private ImageView bullet = new ImageView();
+    private final ControllerGame game;
+    private final ImageView bullet = new ImageView();
 
     Bullet(double x, double y, double size, Image image, ControllerGame game) {
         this.game = game;
@@ -34,7 +34,7 @@ class Bullet {
                 return true;
             }
         }
-        for (Tank tank : game.tanks) {
+        for (sample.Tank tank : game.tanks) {
             if (bullet.getBoundsInParent().intersects(tank.getImageView().getBoundsInParent()) && tank.getImageView() != owner) {
                 tank.explosion(tank.getImageView());
                 if (tank.getImageView() == game.goldTank.getImageView()) {
@@ -89,35 +89,27 @@ class Bullet {
         if (rorate == 270)
             timeline.getKeyFrames().setAll(new KeyFrame(Duration.seconds(0.01), ev -> Platform.runLater(()
                             -> {
-                        if (bullet != null) {
-                            bullet.setX(bullet.getX() - 4);
-                            contact(timeline, owner);
-                        }
+                        bullet.setX(bullet.getX() - 4);
+                        contact(timeline, owner);
                     }
             )));
         if (rorate == 90) timeline.getKeyFrames().setAll(new KeyFrame(Duration.seconds(0.01), ev -> Platform.runLater(()
                         -> {
-                    if (bullet != null) {
-                        bullet.setX(bullet.getX() + 4);
-                        contact(timeline, owner);
-                    }
+                    bullet.setX(bullet.getX() + 4);
+                    contact(timeline, owner);
                 }
         )));
         if (rorate == 0) timeline.getKeyFrames().setAll(new KeyFrame(Duration.seconds(0.01), ev -> Platform.runLater(()
                         -> {
-                    if (bullet != null) {
-                        bullet.setY(bullet.getY() - 4);
-                        contact(timeline, owner);
-                    }
+                    bullet.setY(bullet.getY() - 4);
+                    contact(timeline, owner);
                 }
         )));
         if (rorate == 180)
             timeline.getKeyFrames().setAll(new KeyFrame(Duration.seconds(0.01), ev -> Platform.runLater(()
                             -> {
-                        if (bullet != null) {
-                            bullet.setY(bullet.getY() + 4);
-                            contact(timeline, owner);
-                        }
+                        bullet.setY(bullet.getY() + 4);
+                        contact(timeline, owner);
                     }
             )));
         timeline.setCycleCount(Animation.INDEFINITE);

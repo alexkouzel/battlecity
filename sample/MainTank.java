@@ -13,9 +13,9 @@ import javafx.util.Duration;
 
 import java.util.Timer;
 
-public class MainTank extends Tank {
+public class MainTank extends sample.Tank {
     private final Timer timer = new Timer();
-    private Timeline timeline = new Timeline();
+    private final Timeline timeline = new Timeline();
 
     public MainTank(ControllerGame game) {
         super(game);

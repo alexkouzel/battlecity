@@ -8,7 +8,7 @@ import javafx.application.Platform;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
-abstract class AITank extends Tank {
+abstract class AITank extends sample.Tank {
     private double speedTurns;
 
     void setSpeedTurns(double speedTurns) {

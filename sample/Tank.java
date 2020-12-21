@@ -10,8 +10,8 @@ import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
 public class Tank {
-    private Timeline timelineInertia = new Timeline();
-    private ControllerGame game;
+    private final Timeline timelineInertia = new Timeline();
+    private final ControllerGame game;
     ImageView tank = new ImageView();
     private boolean canFire = true;
     private boolean onIce;
@@ -199,7 +199,7 @@ public class Tank {
     public void tankFire() {
         if (game.isGame && !game.isWin && canFire && game.paneOfGame.getChildren().contains(tank)) {
             canFire = false;
-            Bullet bullet = new Bullet(tank.getX() + sizeTank / 2 - sizeBullet / 2, tank.getY() + sizeTank / 2 - sizeBullet / 2, sizeBullet, bulletImage, game);
+            sample.Bullet bullet = new sample.Bullet(tank.getX() + sizeTank / 2 - sizeBullet / 2, tank.getY() + sizeTank / 2 - sizeBullet / 2, sizeBullet, bulletImage, game);
             game.paneOfGame.getChildren().add(bullet.getImageView());
             tank.toFront();
             game.gridPaneLeafs.toFront();

@@ -3,7 +3,7 @@ package sample;
 import controller.ControllerGame;
 import javafx.scene.image.Image;
 
-public class GrayAITank extends AITank {
+public class GrayAITank extends sample.AITank {
 
     public GrayAITank(ControllerGame game) {
         super(game);
