@@ -5,11 +5,12 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.stage.Stage;
 
-public class ControllerExit {
+public class ExitController {
+    private CreatorController creatorController;
+
     @FXML
     public Button buttonYes;
     public Button buttonNo;
-    private ControllerCreator controllerCreator;
 
     public void buttonAction(ActionEvent actionEvent) {
         if (((Button) actionEvent.getTarget()).getText().equals("Yes")) {
@@ -21,8 +22,7 @@ public class ControllerExit {
         }
     }
 
-    void initData(ControllerCreator controllerCreator)
-    {
-        this.controllerCreator = controllerCreator;
+    public void initData(CreatorController creatorController) {
+        this.creatorController = creatorController;
     }
 }

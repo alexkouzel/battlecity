@@ -1,5 +1,8 @@
 package controller;
 
+import entity.GrayAITank;
+import entity.MainTank;
+import entity.Tank;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -21,13 +24,29 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.util.Duration;
-import sample.GrayAITank;
-import sample.MainTank;
-import sample.Tank;
+import config.Resource;
 
+import java.net.URL;
 import java.util.ArrayList;
 
-public class ControllerGame {
+public class GameController {
+    private final Tank grayTank = new Tank(this);
+    private final ArrayList<ImageView> ALSs = new ArrayList<>();
+
+    public ArrayList<ImageView> staticObjects = new ArrayList<>();
+    public ArrayList<ImageView> iceArea = new ArrayList<>();
+    public ArrayList<Tank> tanks = new ArrayList<>();
+    public MainTank goldTank = new MainTank(this);
+
+    public boolean isLaunched = true;
+    public boolean isRunning = true;
+    public boolean isWinner = false;
+    public int leftAITanks = 1;
+
+    public ImageView baseView;
+    private ImageView gameOverView;
+    private ImageView winnerView;
+
     @FXML
     public Pane paneOfGame;
     public Pane root;
@@ -36,53 +55,28 @@ public class ControllerGame {
     public GridPane gridPane;
     public GridPane gridPaneLeafs;
     public MenuBar menuBar;
-    public ImageView base;
-    private ImageView gameOver;
-    private ImageView youWin;
-    public MainTank goldTank = new MainTank(this);
-    private Tank grayTank = new Tank(this);
-    public boolean isGame = true;
-    public boolean isWin = false;
-    public boolean isLaunch = true;
-    public int countAlTanksLeft = 1;
-    public ArrayList<ImageView> iceArea = new ArrayList<>();
-    private ArrayList<ImageView> ALSs = new ArrayList<>();
-    public ArrayList<ImageView> dontMoveObjects = new ArrayList<>();
-    public ArrayList<Tank> tanks = new ArrayList<>();
-    public static Image grayTankImage = new Image("view/pictures/grayTank.png");
-    public static Image goldTankImage = new Image("view/pictures/goldTank.png");
-    public static Image brickWallImage = new Image("view/pictures/brickWall.png");
-    private static Image brickWall2Image = new Image("view/pictures/brickWall2.png");
-    private static Image brickWall3Image = new Image("view/pictures/brickWall3.png");
-    public static Image solidImage = new Image("view/pictures/solidWall.png");
-    public static Image leafImage = new Image("view/pictures/leafWall.png");
-    public static Image waterImage = new Image("view/pictures/waterWall.png");
-    public static Image iceImage = new Image("view/pictures/iceWall.png");
-    public static Image baseImage = new Image("view/pictures/base.png");
-
-    public static Image getBrickWall2Image() {
-        return brickWall2Image;
-    }
-
-    public static Image getBrickWall3Image() {
-        return brickWall3Image;
-    }
 
     public void addChild(ImageView child) {
         paneOfGame.getChildren().add(child);
     }
 
     public void creator(ActionEvent actionEvent) throws Exception {
+        // create popup stage
         Stage popup = new Stage();
         popup.setAlwaysOnTop(true);
         popup.initModality(Modality.WINDOW_MODAL);
         popup.setResizable(false);
         popup.initOwner(paneOfGame.getScene().getWindow());
         popup.initStyle(StageStyle.UNDECORATED);
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/creator.fxml"));
+
+        // load fxml scene
+        URL location = getClass().getResource(Resource.CreatorView);
+        FXMLLoader loader = new FXMLLoader(location);
         Parent root = loader.load();
+        loader.<CreatorController>getController().initData(this);
+
+        // show fxml scene
         Scene scene = new Scene(root, 850, 775);
-        loader.<ControllerCreator>getController().initData(this);
         popup.setScene(scene);
         popup.show();
     }
@@ -97,15 +91,17 @@ public class ControllerGame {
         GrayAITank grayTank = new GrayAITank(this);
         paneOfGame.getChildren().add(grayTank.getImageView());
         grayTank.setCoordinates(x, y, rotate, size);
-        dontMoveObjects.add(grayTank.getImageView());
+        staticObjects.add(grayTank.getImageView());
         tanks.add(grayTank);
+
+        // put the following objects to front
         grayTank.getImageView().toFront();
         gridPaneLeafs.toFront();
-        if (gameOver != null) {
-            gameOver.toFront();
-        }
-        if (youWin != null) {
-            youWin.toFront();
+
+        if (gameOverView != null) {
+            gameOverView.toFront();
+        } else if (winnerView != null) {
+            winnerView.toFront();
         }
     }
 
@@ -117,27 +113,27 @@ public class ControllerGame {
     }
 
     public void checkWin() {
-        if (!isLaunch) {
+        if (!isLaunched) {
             if (tanks.size() == 1 && tanks.get(0) == goldTank && ALSs.size() == 0) {
-                isWin = true;
-                youWin = new ImageView(new Image("view/pictures/youWin.png"));
-                paneOfGame.getChildren().add(youWin);
-                youWin.toFront();
-                setImageview(youWin, 80, 135, 472.5, 350);
+                isWinner = true;
+                winnerView = new ImageView(new Image(Resource.win));
+                paneOfGame.getChildren().add(winnerView);
+                winnerView.toFront();
+                setImageview(winnerView, 80, 135, 472.5, 350);
             }
         } else {
-            //startGame();
+            // TODO: Start new game.
         }
     }
 
     public void gameOver() {
-        if (!isWin) {
-            isGame = false;
-            gameOver = new ImageView(new Image("view/pictures/gameOver.png"));
-            paneOfGame.getChildren().add(gameOver);
-            gameOver.toFront();
-            gameOver.setX(80);
-            gameOver.setY(150);
+        if (!isWinner) {
+            isRunning = false;
+            gameOverView = new ImageView(new Image(Resource.gameOver));
+            paneOfGame.getChildren().add(gameOverView);
+            gameOverView.toFront();
+            gameOverView.setX(80);
+            gameOverView.setY(150);
         }
     }
 
@@ -158,7 +154,7 @@ public class ControllerGame {
     }
 
     private void createALS(double x, double y) {
-        ImageView ALS = new ImageView(new Image("view/pictures/ALS.png"));
+        ImageView ALS = new ImageView(new Image(Resource.als));
         root.getChildren().add(ALS);
         ALS.toFront();
         ALS.setFitWidth(29.5);
@@ -170,72 +166,86 @@ public class ControllerGame {
 
     private void beginInvasion(int[] countTanks) {
         Timeline timeline = new Timeline();
-        timeline.getKeyFrames().setAll(new KeyFrame(Duration.seconds(1), ev -> Platform.runLater(()
-                -> {
-            int random = (int) (Math.random() * 5);
-            if (random == 4 && countTanks[0] != 0) {
-                createTank(-50, 153, 90, 43);
-                countTanks[0] -= 1;
-            }
-            random = (int) (Math.random() * 5);
-            if (random == 4 && countTanks[1] != 0) {
-                createTank(103, -50, 180, 43);
-                countTanks[1] -= 1;
-            }
-            random = (int) (Math.random() * 5);
-            if (random == 4 && countTanks[2] != 0) {
-                createTank(303, -50, 180, 43);
-                countTanks[2] -= 1;
-            }
-            random = (int) (Math.random() * 5);
-            if (random == 4 && countTanks[3] != 0) {
-                createTank(503, -50, 180, 43);
-                countTanks[3] -= 1;
-            }
-            random = (int) (Math.random() * 5);
-            if (random == 4 && countTanks[4] != 0) {
-                createTank(657, 153, 270, 43);
-                countTanks[4] -= 1;
-            }
-        })));
+        timeline.getKeyFrames().setAll(new KeyFrame(Duration.seconds(1),
+                ev -> Platform.runLater(() -> {
+                    int random = (int) (Math.random() * 5);
+                    if (random == 4 && countTanks[0] != 0) {
+                        createTank(-50, 153, 90, 43);
+                        countTanks[0] -= 1;
+                    }
+                    random = (int) (Math.random() * 5);
+                    if (random == 4 && countTanks[1] != 0) {
+                        createTank(103, -50, 180, 43);
+                        countTanks[1] -= 1;
+                    }
+                    random = (int) (Math.random() * 5);
+                    if (random == 4 && countTanks[2] != 0) {
+                        createTank(303, -50, 180, 43);
+                        countTanks[2] -= 1;
+                    }
+                    random = (int) (Math.random() * 5);
+                    if (random == 4 && countTanks[3] != 0) {
+                        createTank(503, -50, 180, 43);
+                        countTanks[3] -= 1;
+                    }
+                    random = (int) (Math.random() * 5);
+                    if (random == 4 && countTanks[4] != 0) {
+                        createTank(657, 153, 270, 43);
+                        countTanks[4] -= 1;
+                    }
+                })));
         timeline.setCycleCount(Animation.INDEFINITE);
         timeline.play();
     }
 
     void startGame(GridPane gridPane, int[] countTanks) {
-        isLaunch = false;
+        isLaunched = false;
         int count = 0;
         for (int i : countTanks) {
             count += i;
         }
-        countAlTanksLeft = count;
+
+        leftAITanks = count;
         setALS(count);
         beginInvasion(countTanks);
         grayTank.removeTank();
         goldTank.setCoordinates(153, 603, 0, 43);
+
         for (Node node : gridPane.getChildren()) {
             if (node instanceof ImageView) {
                 ImageView imageView = (ImageView) node;
                 ImageView newImageView = new ImageView(imageView.getImage());
                 newImageView.setFitHeight(imageView.getFitHeight());
                 newImageView.setFitWidth(imageView.getFitHeight());
-                GridPane.setConstraints(newImageView, GridPane.getColumnIndex(imageView), GridPane.getRowIndex(imageView));
-                if (newImageView.getImage() != leafImage) {
+                Image image = newImageView.getImage();
+
+                GridPane.setConstraints(newImageView, GridPane.getColumnIndex(imageView),
+                        GridPane.getRowIndex(imageView));
+
+                // handle non-leaf block
+                if (image != Resource.leaf) {
                     this.gridPane.getChildren().add(newImageView);
                 } else {
                     gridPaneLeafs.getChildren().add(newImageView);
                 }
-                if (newImageView.getImage() == baseImage) {
-                    base = newImageView;
+
+                // handle base block
+                if (image == Resource.base) {
+                    baseView = newImageView;
                 }
-                if (newImageView.getImage() == iceImage) {
+
+                // handle ice block
+                if (image == Resource.ice) {
                     ImageView smallBlock = new ImageView();
                     paneOfGame.getChildren().add(smallBlock);
-                    setImageview(smallBlock, GridPane.getColumnIndex(newImageView) * 50 + 12.5, GridPane.getRowIndex(newImageView) * 50 + 12.5, 25, 25);
+                    setImageview(smallBlock, GridPane.getColumnIndex(newImageView) * 50 + 12.5,
+                            GridPane.getRowIndex(newImageView) * 50 + 12.5, 25, 25);
                     iceArea.add(smallBlock);
                 }
-                if (newImageView.getImage() != null && newImageView.getImage() != leafImage && newImageView.getImage() != iceImage) {
-                    dontMoveObjects.add(newImageView);
+
+                // add to static objects if not a leaf or ice
+                if (image != null && image != Resource.leaf && image != Resource.ice) {
+                    staticObjects.add(newImageView);
                 }
             }
         }
@@ -249,16 +259,18 @@ public class ControllerGame {
         menuBar.toFront();
         setALS(1);
 
+        // Initialize player tank
         goldTank.setCoordinates(153, 603, 0, 43);
-        goldTank.setImage(goldTankImage);
+        goldTank.setImage(Resource.goldTank);
         paneOfGame.getChildren().add(goldTank.getImageView());
+        staticObjects.add(goldTank.getImageView());
         tanks.add(goldTank);
-        dontMoveObjects.add(goldTank.getImageView());
 
+        // initialize AI tanks
         grayTank.setCoordinates(200, 425, 0, 43);
-        grayTank.setImage(grayTankImage);
+        grayTank.setImage(Resource.grayTank);
         paneOfGame.getChildren().add(grayTank.getImageView());
+        staticObjects.add(grayTank.getImageView());
         tanks.add(grayTank);
-        dontMoveObjects.add(grayTank.getImageView());
     }
 }

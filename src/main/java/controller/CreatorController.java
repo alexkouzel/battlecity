@@ -15,15 +15,24 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-
+import config.Resource;
 import java.io.IOException;
 
-public class ControllerCreator {
+public class CreatorController {
+    private final int[] tankCount = new int[5];
+    private final Label[] counts = new Label[5];
+    private GameController game;
+    private boolean destroyMode;
+    private boolean buildMode;
+    private boolean usualMode = true;
+    private Image block;
+
     public Label count1;
     public Label count2;
     public Label count3;
     public Label count4;
     public Label count5;
+    public GridPane gridPane;
     public Button changeCount1;
     public Button changeCount2;
     public Button changeCount3;
@@ -35,20 +44,19 @@ public class ControllerCreator {
     public Button water;
     public Button ice;
     public Pane root;
-    public GridPane gridPane;
-    private Image block;
-    private boolean destoyMode;
-    private boolean buildMode;
-    private boolean usualMode = true;
-    private ControllerGame game;
-    private int[] countTanks = new int[5];
 
-    void initData(ControllerGame game) {
+    void initData(GameController game) {
         this.game = game;
     }
 
     @FXML
     private void initialize() {
+        counts[0] = count1;
+        counts[1] = count2;
+        counts[2] = count3;
+        counts[3] = count4;
+        counts[4] = count5;
+
         for (int i = 0; i < 13; ++i) {
             for (int j = 0; j < 13; ++j) {
                 ImageView imageView = new ImageView();
@@ -56,13 +64,19 @@ public class ControllerCreator {
                 imageView.setFitWidth(50);
                 imageView.setFitHeight(50);
                 GridPane.setConstraints(imageView, j, i);
+
                 if (j == 6 && i == 12) {
-                    imageView.setImage(ControllerGame.baseImage);
+                    imageView.setImage(Resource.base);
                 }
-                if (!(j == 3 && i == 12) && !(j == 0 && i == 3) && !(j == 2 && i == 0) && !(j == 6 && i == 0) && !(j == 10 && i == 0) && !(j == 12 && i == 3) && !(j == 6 && i == 12)) {
+
+                if (!(j == 3 && i == 12) && !(j == 0 && i == 3) && !(j == 2 && i == 0) && !(j == 6 && i == 0) &&
+                        !(j == 10 && i == 0) && !(j == 12 && i == 3) && !(j == 6 && i == 12)) {
                     root.addEventFilter(MouseEvent.MOUSE_PRESSED, e -> {
-                        if (!usualMode && imageView.getBoundsInParent().contains(e.getSceneX() - 50, e.getSceneY() - 50)) {
-                            if (destoyMode) {
+                        boolean inBounds = imageView.getBoundsInParent().contains(
+                                e.getSceneX() - 50, e.getSceneY() - 50);
+
+                        if (!usualMode && inBounds) {
+                            if (destroyMode) {
                                 imageView.setImage(null);
                             } else {
                                 if (buildMode) {
@@ -77,47 +91,43 @@ public class ControllerCreator {
     }
 
     public void close(ActionEvent actionEvent) throws IOException {
+        // create popup scene
         Stage popup = new Stage();
         popup.setAlwaysOnTop(true);
         popup.initModality(Modality.WINDOW_MODAL);
         popup.initStyle(StageStyle.UNDECORATED);
         popup.setResizable(false);
         popup.initOwner(count1.getScene().getWindow());
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("../view/exit.fxml"));
+
+        // load fxml scene
+        FXMLLoader loader = new FXMLLoader(getClass().getResource(Resource.ExitView));
+        loader.<ExitController>getController().initData(this);
         Parent root = loader.load();
+
+        // set fxml scene
         Scene scene = new Scene(root, 365, 179);
-        loader.<ControllerExit>getController().initData(this);
         popup.setScene(scene);
         popup.show();
     }
 
     public void takeBlock(ActionEvent actionEvent) {
-        buildMode = true;
-        usualMode = false;
-        destoyMode = false;
         gridPane.setGridLinesVisible(true);
+        destroyMode = false;
+        usualMode = false;
+        buildMode = true;
+
         Button block = (Button) actionEvent.getSource();
-        if (block == brick) {
-            this.block = ControllerGame.brickWallImage;
-        }
-        if (block == leaf) {
-            this.block = ControllerGame.leafImage;
-        }
-        if (block == solid) {
-            this.block = ControllerGame.solidImage;
-        }
-        if (block == water) {
-            this.block = ControllerGame.waterImage;
-        }
-        if (block == ice) {
-            this.block = ControllerGame.iceImage;
-        }
+        this.block = (block == brick) ? Resource.brickWall
+                : (block == leaf) ? Resource.leaf
+                : (block == solid) ? Resource.solid
+                : (block == water) ? Resource.water
+                : (block == ice) ? Resource.ice : null;
     }
 
     public void destroy(ActionEvent actionEvent) {
         buildMode = false;
         usualMode = false;
-        destoyMode = true;
+        destroyMode = true;
         gridPane.setGridLinesVisible(true);
         changeCount1.setText("-");
         changeCount2.setText("-");
@@ -129,7 +139,7 @@ public class ControllerCreator {
     public void usual(ActionEvent actionEvent) {
         buildMode = false;
         usualMode = true;
-        destoyMode = false;
+        destroyMode = false;
         block = null;
         gridPane.setGridLinesVisible(false);
         changeCount1.setText("+");
@@ -140,52 +150,24 @@ public class ControllerCreator {
     }
 
     public void changeCountTanks(ActionEvent actionEvent) {
-        int num = Integer.parseInt(String.valueOf(((Button) actionEvent.getSource()).getId().charAt(11)));
-        switch (num) {
-            case (1):
-                if (destoyMode) {
-                    reduceTank(count1);
-                } else {
-                    addTank(count1);
-                }
-                break;
-            case (2):
-                if (destoyMode) {
-                    reduceTank(count2);
-                } else {
-                    addTank(count2);
-                }
-                break;
-            case (3):
-                if (destoyMode) {
-                    reduceTank(count3);
-                } else {
-                    addTank(count3);
-                }
-                break;
-            case (4):
-                if (destoyMode) {
-                    reduceTank(count4);
-                } else {
-                    addTank(count4);
-                }
-                break;
-            case (5):
-                if (destoyMode) {
-                    reduceTank(count5);
-                } else {
-                    addTank(count5);
-                }
-                break;
+        Button countButton = (Button) actionEvent.getSource();
+        int countId = Integer.parseInt(String.valueOf(countButton.getId().charAt(11)));
+        Label count = counts[countId - 1];
+        if (destroyMode) {
+            reduceTank(count);
+        } else {
+            addTank(count);
         }
     }
 
     private void addTank(Label label) {
         int count = 0;
         setCountTanks();
-        for (int i : countTanks) {
+
+        for (int i : tankCount) {
             count += i;
         }
+
         if (count < 20) {
             label.setText(String.valueOf(Integer.parseInt(label.getText()) + 1));
         }
@@ -198,16 +180,16 @@ public class ControllerCreator {
     }
 
     private void setCountTanks() {
-        countTanks[0] = Integer.parseInt(count1.getText());
-        countTanks[1] = Integer.parseInt(count2.getText());
-        countTanks[2] = Integer.parseInt(count3.getText());
-        countTanks[3] = Integer.parseInt(count4.getText());
-        countTanks[4] = Integer.parseInt(count5.getText());
+        tankCount[0] = Integer.parseInt(count1.getText());
+        tankCount[1] = Integer.parseInt(count2.getText());
+        tankCount[2] = Integer.parseInt(count3.getText());
+        tankCount[3] = Integer.parseInt(count4.getText());
+        tankCount[4] = Integer.parseInt(count5.getText());
     }
 
     public void start(ActionEvent actionEvent) {
         setCountTanks();
-        game.startGame(gridPane, countTanks);
+        game.startGame(gridPane, tankCount);
         Stage stage = (Stage) gridPane.getScene().getWindow();
         stage.close();
     }
