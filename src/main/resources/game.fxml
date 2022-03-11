@@ -14,7 +14,7 @@
       maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="725.0" prefWidth="800.0"
       xmlns="http://javafx.com/javafx/8.0.1" xmlns:fx="http://javafx.com/fxml/1">
     <ImageView fx:id="grayBackground" fitHeight="725.0" fitWidth="810.0" layoutY="10">
-        <Image url="@src/main/resources/image/background/grayBackground.png"/>
+        <Image url="@/image/scene/grayScene.png"/>
     </ImageView>
     <MenuBar fx:id="menuBar" prefHeight="25.0" prefWidth="810.0">
         <Menu mnemonicParsing="false" text="Game">
@@ -24,7 +24,7 @@
     <Pane fx:id="paneOfGame" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity"
           prefHeight="650.0" prefWidth="650.0" layoutY="50.0" layoutX="50.0">
         <ImageView fx:id="blackBackground" fitHeight="650.0" fitWidth="650.0">
-            <Image url="@src/main/resources/image/background/blackBackground.jpg"/>
+            <Image url="@/image/scene/blackScene.jpg"/>
         </ImageView>
         <GridPane fx:id="gridPane" prefHeight="650.0" prefWidth="650.0">
             <columnConstraints>

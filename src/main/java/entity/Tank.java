@@ -10,6 +10,8 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 
+import java.util.ArrayList;
+
 public class Tank {
     ImageView tank = new ImageView();
     private final Timeline inertiaTimeline = new Timeline();
@@ -32,11 +34,38 @@ public class Tank {
         initialize();
     }
 
-    void move(String way, Double length, Boolean active) {
-        if (!(tank.getImage() == Resource.goldTank && (!game.isRunning || game.isWinner))) {
+    private void moveOneWay(int degree, double length, boolean isActive) {
+        int mult = degree == 270 ? -1 : 1;
+        double shift = length * mult;
+
+        if (isActive) {
+            tank.setRotate(degree);
+            if (onIce && Math.abs(inertiaX) < 2) {
+                inertiaX += inertiaSpeed * mult;
+            } else {
+                tank.setX(tank.getX() + shift);
+                inertiaY = 0;
+                inertiaX = moveSpeed * mult * 0.7;
+            }
+        } else {
+            tank.setX(tank.getX() + shift);
+        }
+
+        boolean isOutOfBounds = degree == 270
+                ? tank.getLayoutX() + tank.getX() <= 0
+                : tank.getLayoutX() + tank.getX() >= game.paneOfGame.getWidth() - sizeTank;
+
+        if (isOutOfBounds) {
+            tank.setX(tank.getX() - shift);
+            inertiaX = 0;
+        }
+    }
+
+    void move(String way, Double length, Boolean isActive) {
+        if (!(tank.getImage() == Resource.goldTank && (!game.isRunning || game.hasWinner))) {
             switch (way) {
                 case "Up":
-                    if (active) {
+                    if (isActive) {
                         tank.setRotate(0);
                         if (onIce && inertiaY > -2) {
                             inertiaY -= inertiaSpeed;
@@ -55,45 +84,13 @@ public class Tank {
                     }
                     break;
                 case "Left":
-                    if (active) {
-                        tank.setRotate(270);
-                        if (onIce && inertiaX > -2) {
-                            inertiaX -= inertiaSpeed;
-                        } else {
-                            tank.setX(tank.getX() - length);
-                            inertiaY = 0;
-                            inertiaX = -moveSpeed * 0.7;
-                        }
-                    } else {
-                        tank.setX(tank.getX() - length);
-                    }
-
-                    if (tank.getLayoutX() + tank.getX() <= 0) {
-                        tank.setX(tank.getX() + length);
-                        inertiaX = 0;
-                    }
+                    moveOneWay(270, length, isActive);
                     break;
                 case "Right":
-                    if (active) {
-                        tank.setRotate(90);
-                        if (onIce && inertiaX < 2) {
-                            inertiaX += inertiaSpeed;
-                        } else {
-                            tank.setX(tank.getX() + length);
-                            inertiaY = 0;
-                            inertiaX = moveSpeed * 0.7;
-                        }
-                    } else {
-                        tank.setX(tank.getX() + length);
-                    }
-
-                    if (tank.getLayoutX() + tank.getX() >= game.paneOfGame.getWidth() - sizeTank) {
-                        tank.setX(tank.getX() - length);
-                        inertiaX = 0;
-                    }
+                    moveOneWay(90, length, isActive);
                     break;
                 case "Down":
-                    if (active) {
+                    if (isActive) {
                         tank.setRotate(180);
                         if (onIce && inertiaY < 2) {
                             inertiaY += inertiaSpeed;
@@ -113,32 +110,44 @@ public class Tank {
                     break;
             }
         }
-        for (ImageView imageView : game.iceArea) {
-            if (tank.getBoundsInParent().intersects(imageView.getBoundsInParent())) {
-                onIce = true;
-                break;
-            } else {
-                onIce = false;
+
+        // handle collision with ice block
+        onIce = isColliding(game.iceArea);
+
+        // handle collision with static object
+        handleCollision(way, length);
+    }
+
+    private boolean isColliding(ArrayList<ImageView> blocks) {
+        for (ImageView block : blocks) {
+            if (isColliding(block)) {
+                return true;
             }
         }
+        return false;
+    }
+
+    private boolean isColliding(ImageView block) {
+        return tank.getBoundsInParent().intersects(block.getBoundsInParent());
+    }
+
+    private void handleCollision(String way, double length) {
         for (ImageView imageView : game.staticObjects) {
-            if (imageView != tank) {
-                if (tank.getBoundsInParent().intersects(imageView.getBoundsInParent())) {
-                    switch (way) {
-                        case "Up":
-                            tank.setY(tank.getY() + length);
-                            inertiaY = 0;
-                            break;
-                        case "Left":
-                            tank.setX(tank.getX() + length);
-                            inertiaX = 0;
-                        case "Right":
-                            tank.setX(tank.getX() - length);
-                            inertiaX = 0;
-                        case "Down":
-                            tank.setY(tank.getY() - length);
-                            inertiaY = 0;
-                    }
+            if (imageView != tank && tank.getBoundsInParent().intersects(imageView.getBoundsInParent())) {
+                switch (way) {
+                    case "Up":
+                        tank.setY(tank.getY() + length);
+                        inertiaY = 0;
+                        break;
+                    case "Left":
+                        tank.setX(tank.getX() + length);
+                        inertiaX = 0;
+                    case "Right":
+                        tank.setX(tank.getX() - length);
+                        inertiaX = 0;
+                    case "Down":
+                        tank.setY(tank.getY() - length);
+                        inertiaY = 0;
                 }
             }
         }
@@ -188,7 +197,7 @@ public class Tank {
 
     public void tankFire() {
         boolean isTankPresent = game.paneOfGame.getChildren().contains(tank);
-        if (game.isRunning && !game.isWinner && canFire && isTankPresent) {
+        if (game.isRunning && !game.hasWinner && canFire && isTankPresent) {
             canFire = false;
             double bulletX = tank.getX() + sizeTank / 2 - sizeBullet / 2;
             double bulletY = tank.getY() + sizeTank / 2 - sizeBullet / 2;

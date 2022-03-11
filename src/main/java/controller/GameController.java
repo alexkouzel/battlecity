@@ -40,7 +40,7 @@ public class GameController {
 
     public boolean isLaunched = true;
     public boolean isRunning = true;
-    public boolean isWinner = false;
+    public boolean hasWinner = false;
     public int leftAITanks = 1;
 
     public ImageView baseView;
@@ -115,7 +115,7 @@ public class GameController {
     public void checkWin() {
         if (!isLaunched) {
             if (tanks.size() == 1 && tanks.get(0) == goldTank && ALSs.size() == 0) {
-                isWinner = true;
+                hasWinner = true;
                 winnerView = new ImageView(new Image(Resource.win));
                 paneOfGame.getChildren().add(winnerView);
                 winnerView.toFront();
@@ -127,7 +127,7 @@ public class GameController {
     }
 
     public void gameOver() {
-        if (!isWinner) {
+        if (!hasWinner) {
             isRunning = false;
             gameOverView = new ImageView(new Image(Resource.gameOver));
             paneOfGame.getChildren().add(gameOverView);
