@@ -13,11 +13,11 @@
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.GridPane?>
 
-<Pane fx:controller="controller.CreatorController" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
+<Pane fx:controller="com.battlecity.controllers.CreatorController" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity"
       minWidth="-Infinity" prefHeight="775.0" prefWidth="850.0" xmlns="http://javafx.com/javafx/8.0.1"
       xmlns:fx="http://javafx.com/fxml/1">
     <ImageView fitHeight="785.0" fitWidth="860.0">
-        <Image url="@image/scene/grayScene.jpg"/>
+        <Image url="@images/scenes/grayScene.jpg"/>
     </ImageView>
     <MenuBar prefHeight="25.0" prefWidth="860.0">
         <Menu mnemonicParsing="false" text="File">
@@ -26,7 +26,7 @@
     </MenuBar>
     <Pane fx:id="root" layoutY="27.0" prefHeight="650.0" prefWidth="650.0" translateX="50.0" translateY="25.0">
         <ImageView fitHeight="650.0" fitWidth="650.0">
-            <Image url="@/image/scene/blackScene.jpg"/>
+            <Image url="@images/scenes/blackScene.jpg"/>
         </ImageView>
         <GridPane fx:id="gridPane" prefHeight="650.0" prefWidth="650.0">
             <columnConstraints>

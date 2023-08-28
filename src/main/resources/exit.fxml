@@ -5,7 +5,7 @@
 <?import javafx.scene.layout.Pane?>
 <?import javafx.scene.text.Font?>
 
-<Pane style="-fx-border-width: 1; -fx-border-style: solid;" fx:controller="controller.ExitController"
+<Pane style="-fx-border-width: 1; -fx-border-style: solid;" fx:controller="com.battlecity.controllers.ExitController"
       maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="179.0"
       prefWidth="365.0" xmlns="http://javafx.com/javafx/8.0.1" xmlns:fx="http://javafx.com/fxml/1">
     <Label layoutX="48.0" layoutY="14.0" text="Really want to exit?">
